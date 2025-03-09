@@ -73,16 +73,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <licenses>
-        <!--许可证-->
-        <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-            <comments>OpenSource</comments>
-        </license>
-    </licenses>
     <developers>
         <!--贡献者-->
         <developer>

@@ -23,8 +23,10 @@
     <!--指定依赖版本-->
     <properties>
         <java.version>21</java.version>
-        <mybatis>3.0.4</mybatis>
-        <lombok>1.18.36</lombok>
+        <mybatis.version>3.0.4</mybatis.version>
+        <lombok.version>1.18.30</lombok.version>
+        <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <jjwt.version>0.12.6</jjwt.version>
     </properties>
     <!--父模块，只做管理-->
     <dependencyManagement>
@@ -32,12 +34,22 @@
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis}</version>
+                <version>${mybatis.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>${lombok}</version>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jjwt.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

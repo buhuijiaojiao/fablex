@@ -72,7 +72,7 @@ public class Result<T> {
     }
 
     /**
-     * 判断是否成功
+     * 判断是否成功 , Json序列化器会自动调用属于@Getter的方法，其中以is开头，后面是大写字母（例如'O'k）的会根据JavaBean的规范，被视为Getter
      */
     public boolean isOk() {
         return Objects.equals(this.code, ErrorCodeEnum.OK.getCode());

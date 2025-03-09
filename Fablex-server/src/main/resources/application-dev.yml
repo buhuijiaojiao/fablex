@@ -1,0 +1,19 @@
+--- #---------------------数据库配置---------------------------
+fablex:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: novel
+    username: root
+    password: 123456
+
+--- #---------------------自定义配置----------------------------
+fablex:
+  jwt:
+    secret: E66559580A1ADF48CDD928516062F12F
+    expire-time: 86400000
+# 开启 SpringDoc 接口文档
+springdoc:
+  api-docs:
+    enabled: true

@@ -2,7 +2,7 @@
 
 # 📚 Fablex | 故事的集合地
 
-![img](https://img.shields.io/badge/SpringBoot-3.0-green) ![img](https://img.shields.io/badge/Vue-3.x-blue) ![img](https://img.shields.io/badge/License-MIT-yellow) ![img](https://img.shields.io/badge/Redis-%E2%9C%93-red) ![img](https://img.shields.io/badge/MyBatis-%E2%9C%93-orange)
+![img](https://img.shields.io/badge/SpringBoot-3.0-green) ![img](https://img.shields.io/badge/Vue-3.x-blue) ![img](https://img.shields.io/badge/License-Apache2.0-yellow) ![img](https://img.shields.io/badge/Redis-%E2%9C%93-red) ![img](https://img.shields.io/badge/MyBatis-%E2%9C%93-orange)
 
 **一站式小说阅读平台，探索无限故事世界**
 

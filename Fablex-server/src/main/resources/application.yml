@@ -40,3 +40,13 @@ fablex:
   jwt:
     secret: ${fablex.jwt.secret}
     expire: ${fablex.jwt.expire}
+
+--- #---------------------中间件配置---------------------------
+spring:
+  data:
+    # Redis 配置
+    redis:
+      host: ${fablex.redis.host}
+      port: ${fablex.redis.port}
+      password: ${fablex.redis.password}
+      database: ${fablex.datasource.database}

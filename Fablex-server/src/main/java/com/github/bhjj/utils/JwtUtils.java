@@ -21,19 +21,12 @@ import java.util.Objects;
  * @author ZhangXianDuo
  * @date 2025/3/9
  */
-@ConditionalOnProperty("novel.jwt.secret")
 @Component
 @Slf4j
 public class JwtUtils {
 
     @Autowired
     private JwtProperties jwtProperties;
-    /**
-     * 注入JWT加密密钥,过期时间
-     */
-    private String secret = jwtProperties.getSecret();
-    private Long expireTime = jwtProperties.getExpireTime();
-
     /**
      * 定义系统标识头常量(指定的系统发放令牌，实现颗粒化给予权限)
      */
@@ -50,8 +43,8 @@ public class JwtUtils {
         return Jwts.builder()
                 .setHeaderParam(HEADER_SYSTEM_KEY, systemKey)
                 .setSubject(uid.toString())
-                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getExpire()))
+                .signWith(Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8)))
                 .compact();
     }
 
@@ -66,7 +59,7 @@ public class JwtUtils {
         Jws<Claims> claimsJws;
         try {
             claimsJws = Jwts.parser()
-                    .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                    .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8)))
                     .build()
                     .parseClaimsJws(token);
             // OK, we can trust this JWT

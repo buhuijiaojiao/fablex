@@ -5,10 +5,8 @@ import com.github.bhjj.auth.AuthStrategy;
 import com.github.bhjj.constant.ApiRouterConsts;
 import com.github.bhjj.constant.SystemConfigConsts;
 import com.github.bhjj.context.UserHolder;
-import com.github.bhjj.enumeration.ErrorCodeEnum;
 import com.github.bhjj.exception.BusinessException;
 import com.github.bhjj.resp.Result;
-import com.github.bhjj.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 用户认证拦截器

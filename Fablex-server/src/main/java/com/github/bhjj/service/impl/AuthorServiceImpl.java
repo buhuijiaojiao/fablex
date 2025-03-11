@@ -1,6 +1,5 @@
 package com.github.bhjj.service.impl;
 
-import com.github.bhjj.service.AuthorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +9,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class AuthorServiceImpl implements AuthorService {
+public class AuthorServiceImpl {
 
 }

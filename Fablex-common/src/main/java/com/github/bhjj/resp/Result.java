@@ -40,6 +40,7 @@ public class Result<T> {
     }
 
     private Result(T data) {
+        this();
         this.data = data;
     }
 

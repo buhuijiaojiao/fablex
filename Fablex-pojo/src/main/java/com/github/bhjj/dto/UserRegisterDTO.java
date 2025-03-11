@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Length;
 
 /**
  * 注册请求类
+ *
  * @author ZhangXianDuo
  * @date 2025/3/10
  */

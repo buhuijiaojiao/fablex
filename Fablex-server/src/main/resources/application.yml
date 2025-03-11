@@ -22,6 +22,26 @@ spring:
 #  shardingsphere:
 #    # 是否开启分库分表
 #    enabled: false
+--- #----------------------Mybatis-plus配置-----------------------------
+mybatis-plus:
+#  类型别名
+#  type-aliases-package: com.github.bhjj.dao
+#  默认扫描类路径下的mapper包及其子包
+  mapper-locations: "classpath*:/mapper/**/*.xml"
+  configuration:
+#    启用SQL日志打印到控制台
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    驼峰映射
+    map-underscore-to-camel-case: true
+#    二级缓存
+    cache-enabled: false
+  global-config:
+    db-config:
+#     默认由雪花算法生成主键(auto代表自增)
+      id-type: auto
+#      更新策略，只更新不为空的字段
+      update-strategy: not_null
+
 --- #----------------------Logbook配置-----------------------------
 logbook:
   format:
@@ -49,4 +69,14 @@ spring:
       host: ${fablex.redis.host}
       port: ${fablex.redis.port}
       password: ${fablex.redis.password}
-      database: ${fablex.datasource.database}
+      database: ${fablex.redis.database}
+
+--- #---------------------跨域配置---------------------------
+# 项目配置
+fablex:
+  # 跨域配置
+  cors:
+    # 允许跨域的域名
+    allow-origins:
+      - http://192.168.68.82:8080
+      - http://localhost:8080

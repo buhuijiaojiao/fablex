@@ -9,7 +9,7 @@ public class CacheConsts {
     /**
      * 本项目 Redis 缓存前缀
      */
-    public static final String REDIS_CACHE_PREFIX = "Cache::Novel::";
+    public static final String REDIS_CACHE_PREFIX = "Cache::Fablex::";
 
 
     /**

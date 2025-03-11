@@ -3,13 +3,14 @@ package com.github.bhjj.service;
 import com.github.bhjj.dto.UserRegisterDTO;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.vo.UserRegisterVO;
-import jakarta.validation.Valid;
 
 /**
+ * 用户信息服务
+ *
  * @author ZhangXianDuo
  * @date 2025/3/10
  */
-public interface UserService {
+public interface UserInfoService {
     /**
      * 用户注册
      * @param userRegisterDTO

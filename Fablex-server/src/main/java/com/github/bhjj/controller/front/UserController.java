@@ -34,6 +34,7 @@ public class UserController {
     @PostMapping("/register")
     @Operation(summary = "用户注册接口")
     public Result<UserRegisterVO> register(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
+        log.info("用户注册接口，参数：{}", userRegisterDTO);
         return userInfoService.register(userRegisterDTO);
     }
 }

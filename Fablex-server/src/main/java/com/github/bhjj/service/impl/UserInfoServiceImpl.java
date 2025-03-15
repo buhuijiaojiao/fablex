@@ -9,6 +9,7 @@ import com.github.bhjj.entity.UserInfo;
 import com.github.bhjj.enumeration.ErrorCodeEnum;
 import com.github.bhjj.exception.BusinessException;
 import com.github.bhjj.manager.cache.UserInfoCacheManager;
+import com.github.bhjj.manager.redis.VerifyCodeManager;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.UserInfoService;
 import com.github.bhjj.utils.JwtUtils;
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
 public class UserInfoServiceImpl implements UserInfoService {
     private final UserInfoMapper userInfoMapper;
     private final UserInfoCacheManager userInfoCacheManager;
+    private final VerifyCodeManager verifyCodeManager;
     private final JwtUtils jwtUtils;
 
     /**
@@ -42,8 +44,9 @@ public class UserInfoServiceImpl implements UserInfoService {
      */
     @Override
     public Result<UserRegisterVO> register(UserRegisterDTO userRegisterDTO) {
-        //TODO 验证码校验
-
+        if (!verifyCodeManager.imgVerifyCodeOk(userRegisterDTO.getSessionId(), userRegisterDTO.getVelCode())) {
+            throw new BusinessException(ErrorCodeEnum.USER_VERIFY_CODE_ERROR);
+        }
         //校验手机号是否已经被注册
         QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(DatabaseConsts.UserInfoTable.COLUMN_USERNAME, userRegisterDTO.getUsername())
@@ -60,9 +63,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setUpdateTime(LocalDateTime.now());
         userInfo.setSalt("0");
         userInfoMapper.insert(userInfo);
-
-        // TODO 删除验证码
-
+        verifyCodeManager.removeImgVerifyCode(userRegisterDTO.getSessionId());
         // 生成token返回数据
         return Result.success(UserRegisterVO.builder()
                 .token(jwtUtils.generateToken(userInfo.getId(), SystemConfigConsts.FABLEX_FRONT_KEY))

@@ -7,6 +7,7 @@ import com.github.bhjj.vo.ImgVerifyCodeVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ import java.io.IOException;
 @Tag(name = "ResourceController", description = "前台门户-资源(图片/视频/文档)接口")
 @RequiredArgsConstructor
 @RequestMapping(ApiRouterConsts.API_FRONT_RESOURCE_URL_PREFIX)
+@Slf4j
 @RestController
 public class ResourceController {
     private final ResourceService resourceService;
@@ -31,6 +33,7 @@ public class ResourceController {
     @Operation(summary = "获取图片验证码接口")
     @GetMapping("/img_verify_code")
     public Result<ImgVerifyCodeVO> getImgVerifyCode() throws IOException {
+        log.info("获取图片验证码接口");
         return resourceService.getImgVerifyCode();
     }
 }

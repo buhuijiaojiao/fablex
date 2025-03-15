@@ -13,7 +13,7 @@ springdoc:
 --- #---------------------数据库配置---------------------------
 spring:
   datasource:
-    url: jdbc:mysql://${fablex.datasource.host}:${fablex.datasource.port}/${fablex.datasource.database}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${fablex.datasource.host}:${fablex.datasource.port}/${fablex.datasource.database}?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: ${fablex.datasource.username}
     password: ${fablex.datasource.password}
   # ShardingSphere-JDBC 配置
@@ -38,7 +38,7 @@ mybatis-plus:
   global-config:
     db-config:
 #     默认由雪花算法生成主键(auto代表自增)
-      id-type: auto
+      id-type: assign_id
 #      更新策略，只更新不为空的字段
       update-strategy: not_null
 
@@ -78,5 +78,5 @@ fablex:
   cors:
     # 允许跨域的域名
     allow-origins:
-      - http://192.168.68.82:8080
+      - http://localhost:1024
       - http://localhost:8080

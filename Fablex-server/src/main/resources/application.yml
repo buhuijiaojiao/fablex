@@ -6,6 +6,9 @@ spring:
   profiles:
     # 激活特定配置
     active: dev
+
+server:
+  port: ${fablex.port}
 --- #--------------------接口文档配置---------------------------
 springdoc:
   api-docs:

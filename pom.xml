@@ -27,6 +27,7 @@
         <lombok.version>1.18.30</lombok.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <logbook.version>3.9.0</logbook.version>
     </properties>
     <!--父模块，只做管理-->
     <dependencyManagement>
@@ -50,6 +51,11 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.zalando</groupId>
+                <artifactId>logbook-spring-boot-starter</artifactId>
+                <version>${logbook.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

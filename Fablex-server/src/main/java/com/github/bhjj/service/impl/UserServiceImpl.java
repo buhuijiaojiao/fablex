@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.bhjj.constant.DatabaseConsts;
 import com.github.bhjj.constant.SystemConfigConsts;
 import com.github.bhjj.dao.UserInfoMapper;
+import com.github.bhjj.dto.UserLoginDTO;
 import com.github.bhjj.dto.UserRegisterDTO;
 import com.github.bhjj.entity.UserInfo;
 import com.github.bhjj.enumeration.ErrorCodeEnum;
@@ -11,8 +12,9 @@ import com.github.bhjj.exception.BusinessException;
 import com.github.bhjj.manager.cache.UserInfoCacheManager;
 import com.github.bhjj.manager.redis.VerifyCodeManager;
 import com.github.bhjj.resp.Result;
-import com.github.bhjj.service.UserInfoService;
+import com.github.bhjj.service.UserService;
 import com.github.bhjj.utils.JwtUtils;
+import com.github.bhjj.vo.UserLoginVO;
 import com.github.bhjj.vo.UserRegisterVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 /**
@@ -30,7 +33,7 @@ import java.time.LocalDateTime;
  */
 @Service
 @RequiredArgsConstructor
-public class UserInfoServiceImpl implements UserInfoService {
+public class UserServiceImpl implements UserService {
     private final UserInfoMapper userInfoMapper;
     private final UserInfoCacheManager userInfoCacheManager;
     private final VerifyCodeManager verifyCodeManager;
@@ -70,4 +73,35 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .uid(userInfo.getId())
                 .build());
     }
+
+    /**
+     * 用户登录
+     *
+     * @param userLoginDTO
+     * @return
+     */
+    @Override
+    public Result<UserLoginVO> login(UserLoginDTO userLoginDTO) {
+        //查询用户信息
+        QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.UserInfoTable.COLUMN_USERNAME, userLoginDTO.getUsername())
+                .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
+        UserInfo userInfo = userInfoMapper.selectOne(queryWrapper);
+        if (Objects.isNull(userInfo)) {
+            //用户不存在
+            throw new BusinessException(ErrorCodeEnum.USER_ACCOUNT_NOT_EXIST);
+        }
+        // 判断密码是否正确
+        if (!Objects.equals(userInfo.getPassword()
+                , DigestUtils.md5DigestAsHex(userLoginDTO.getPassword().getBytes(StandardCharsets.UTF_8)))) {
+            // 密码错误
+            throw new BusinessException(ErrorCodeEnum.USER_PASSWORD_ERROR);
+        }
+        return Result.success(UserLoginVO.builder()
+                .uid(userInfo.getId())
+                .nickName(userInfo.getNickName())
+                .token(jwtUtils.generateToken(userInfo.getId(), SystemConfigConsts.FABLEX_FRONT_KEY))
+                .build());
+    }
+
 }

@@ -83,3 +83,11 @@ fablex:
     allow-origins:
       - http://localhost:1024
       - http://localhost:8080
+--- #---------------------ES配置----------------------------
+spring:
+  elasticsearch:
+    enabled: false
+    host: ${fablex.elasticsearch.host}
+    port: ${fablex.elasticsearch.port}
+    password: ${fablex.elasticsearch.password}
+    username: ${fablex.elasticsearch.username}

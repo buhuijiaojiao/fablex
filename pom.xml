@@ -28,6 +28,7 @@
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <jjwt.version>0.12.6</jjwt.version>
         <logbook.version>3.9.0</logbook.version>
+        <spring-ai.version>1.0.0-M6</spring-ai.version>
     </properties>
     <!--父模块，只做管理-->
     <dependencyManagement>
@@ -56,6 +57,13 @@
                 <groupId>org.zalando</groupId>
                 <artifactId>logbook-spring-boot-starter</artifactId>
                 <version>${logbook.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

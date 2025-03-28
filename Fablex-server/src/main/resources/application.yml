@@ -86,8 +86,6 @@ fablex:
 --- #---------------------ES配置----------------------------
 spring:
   elasticsearch:
-    enabled: false
+    enabled: true
     host: ${fablex.elasticsearch.host}
     port: ${fablex.elasticsearch.port}
-    password: ${fablex.elasticsearch.password}
-    username: ${fablex.elasticsearch.username}

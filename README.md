@@ -4,7 +4,7 @@
 
 ![img](https://img.shields.io/badge/SpringBoot-3.0-green) ![img](https://img.shields.io/badge/Vue-3.x-blue) ![img](https://img.shields.io/badge/License-Apache2.0-yellow) ![img](https://img.shields.io/badge/Redis-%E2%9C%93-red) ![img](https://img.shields.io/badge/MyBatis-%E2%9C%93-orange)
 
-**一站式小说阅读平台，探索无限故事世界**
+**一站式小说阅读，创作平台，探索无限故事世界**
 
 [预览演示](https://github.com/buhuijiaojiao/fablex) • [文档](https://github.com/buhuijiaojiao/fablex) • [报告问题](https://github.com/buhuijiaojiao/fablex/issues) • [请求功能](https://github.com/buhuijiaojiao/fablex/issues)
 
@@ -32,7 +32,7 @@ Fablex (fable-complex) 是一个基于SpringBoot3和Vue3开发的现代化小说
 
 - **SpringBoot 3** - 核心框架
 - **SpringMVC** - MVC框架
-- **MyBatis** - ORM框架
+- **MyBatis-plus** - ORM框架
 - **Redis** - 缓存服务
 - **MySQL** - 数据存储
 
@@ -67,45 +67,15 @@ Fablex (fable-complex) 是一个基于SpringBoot3和Vue3开发的现代化小说
 
 ### 环境要求
 
-- JDK 17+
+- JDK 21
 - Node.js 16+
 - MySQL 8.0+
-- Redis 6.0+
+- Redis 7.0+
 
 ### 后端部署
 
-```bash
-# 克隆项目
-git clone https://github.com/buhuijiaojiao/fablex.git
-
-# 进入后端目录
-cd fablex/backend
-
-# 配置数据库
-# 修改 application.yml 中的数据库配置
-
-# 使用Maven构建
-mvn clean package
-
-# 运行应用
-java -jar target/fablex-backend.jar
-```
 
 ### 前端部署
-
-```bash
-# 进入前端目录
-cd fablex/frontend
-
-# 安装依赖
-npm install
-
-# 开发模式启动
-npm run serve
-
-# 构建生产版本
-npm run build
-```
 
 ## 📋 开发路线图
 
@@ -120,15 +90,9 @@ npm run build
 
 感谢您对Fablex项目的关注！我们欢迎任何形式的贡献。
 
-1. Fork本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个Pull Request
-
 ## 📄 许可证
 
-该项目基于[Apache-2.0](https://github.com/buhuijiaojiao/fablex#Apache-2.0-1-ov-file)许可证
+[Apache-2.0](https://github.com/buhuijiaojiao/fablex#Apache-2.0-1-ov-file)
 
 ## 👏 鸣谢
 

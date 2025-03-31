@@ -29,6 +29,7 @@
         <jjwt.version>0.12.6</jjwt.version>
         <logbook.version>3.9.0</logbook.version>
         <spring-ai.version>1.0.0-M6</spring-ai.version>
+        <xxl-job.version>2.3.1</xxl-job.version>
     </properties>
     <!--父模块，只做管理-->
     <dependencyManagement>
@@ -64,6 +65,12 @@
                 <version>${spring-ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- XXL-JOB 相关 -->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

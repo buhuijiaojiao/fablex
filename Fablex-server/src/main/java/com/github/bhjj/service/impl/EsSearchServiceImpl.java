@@ -41,11 +41,10 @@ import java.util.Objects;
 @Slf4j
 public class EsSearchServiceImpl implements SearchService {
     private final ElasticsearchClient esClient;
-
+    //TODO 待检验搜索效果
     @SneakyThrows
     @Override
     public Result<PageVO<BookInfoVO>> searchBooks(BookSearchDTO condition) {
-        //TODO 待测试，因为es中还未同步数据
         //构建查询请求
         SearchRequest searchRequest = SearchRequest.of(s -> {
                     //指定索引

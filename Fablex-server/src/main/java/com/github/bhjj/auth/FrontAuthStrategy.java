@@ -19,6 +19,7 @@ public class FrontAuthStrategy implements AuthStrategy{
     private final UserInfoCacheManager userInfoCacheManager;
     @Override
     public void auth(String token, String requestUri) throws BusinessException {
+        //统一账号认证
         authSSO(jwtUtils, token, userInfoCacheManager);
     }
 }

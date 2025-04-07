@@ -9,7 +9,7 @@ import com.github.bhjj.vo.BookInfoVO;
 import java.util.List;
 
 /**
- * 小说信息查询
+ * 小说信息
  * @author ZhangXianDuo
  * @date 2025/3/27
  */

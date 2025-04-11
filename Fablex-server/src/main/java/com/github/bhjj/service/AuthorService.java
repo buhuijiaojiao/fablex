@@ -10,7 +10,17 @@ import jakarta.validation.Valid;
  * @date 2025/4/1
  */
 public interface AuthorService {
+    /**
+     * 注册
+     * @param authorRegisterDTO
+     * @return
+     */
     Result<Void> register(AuthorRegisterDTO authorRegisterDTO);
 
+    /**
+     * 获取作家状态
+     * @param userId
+     * @return
+     */
     Result<Integer> getStatus(Long userId);
 }

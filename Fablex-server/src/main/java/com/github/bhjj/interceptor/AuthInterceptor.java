@@ -27,7 +27,9 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
+
     private final Map<String, AuthStrategy> authStrategyMap;
+
     private final ObjectMapper objectMapper;
     @Override
     public boolean preHandle(HttpServletRequest request,

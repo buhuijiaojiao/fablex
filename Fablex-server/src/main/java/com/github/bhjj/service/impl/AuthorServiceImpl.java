@@ -31,6 +31,11 @@ public class AuthorServiceImpl implements AuthorService {
     private final AuthorInfoMapper authorInfoMapper;
     private final AuthorInfoCacheManager authorInfoCacheManager;
 
+    /**
+     * 注册
+     * @param authorRegisterDTO
+     * @return
+     */
     @Override
     public Result<Void> register(AuthorRegisterDTO authorRegisterDTO) {
         // 校验该用户是否已注册为作家
@@ -51,6 +56,11 @@ public class AuthorServiceImpl implements AuthorService {
         return Result.success();
     }
 
+    /**
+     * 获取作家状态
+     * @param userId
+     * @return
+     */
     @Override
     public Result<Integer> getStatus(Long userId) {
         //检查缓存

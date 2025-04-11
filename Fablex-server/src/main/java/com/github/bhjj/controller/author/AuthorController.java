@@ -32,7 +32,6 @@ public class AuthorController {
     @PostMapping("register")
     public Result<Void> register(@Valid @RequestBody AuthorRegisterDTO authorRegisterDTO) {
         log.info("作家注册请求参数: {}", authorRegisterDTO);
-        // TODO: 2025/4/6 这里需要从上下文中获取用户ID
         authorRegisterDTO.setUserId(UserHolder.getUserId());
         return authorService.register(authorRegisterDTO);
     }
@@ -40,7 +39,6 @@ public class AuthorController {
     @GetMapping("status")
     public Result<Integer> getStatus() {
         log.info("作家状态查询");
-        //TODO: 2025/4/6 这里需要从上下文中获取用户ID   待办问题：获取不到用户ID
         return authorService.getStatus(UserHolder.getUserId());
     }
 

@@ -13,7 +13,7 @@ import org.springframework.cache.annotation.EnableCaching;
  */
 @SpringBootApplication
 @MapperScan("com.github.bhjj.dao")
-//@EnableCaching
+@EnableCaching
 public class FablexServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(FablexServerApplication.class, args);

@@ -3,6 +3,7 @@ package com.github.bhjj.resp;
 import com.github.bhjj.enumeration.ErrorCodeEnum;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,7 +13,9 @@ import java.util.Objects;
  * @date 2025/3/8
  */
 @Getter
-public class Result<T> {
+public class Result<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 响应码

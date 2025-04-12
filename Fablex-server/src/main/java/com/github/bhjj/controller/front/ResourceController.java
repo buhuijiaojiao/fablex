@@ -36,4 +36,6 @@ public class ResourceController {
         log.info("获取图片验证码接口");
         return resourceService.getImgVerifyCode();
     }
+
+    //TODO 文件上传待办
 }

@@ -4,6 +4,7 @@ import com.github.bhjj.constant.ApiRouterConsts;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.HomeService;
 import com.github.bhjj.vo.HomeBookVO;
+import com.github.bhjj.vo.HomeFriendLinkVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,11 @@ public class HomeController {
         //测试虚拟线程处理请求
         log.debug("处理请求的线程：{}", Thread.currentThread());
         return homeService.listHomeBooks();
+    }
+    @Operation(summary = "友情链接")
+    @GetMapping("/friend_Link/list")
+    public Result<List<HomeFriendLinkVO>> listHomeFriendLinks() {
+        log.info("友情链接请求");
+        return homeService.listHomeFriendLinks();
     }
 }

@@ -56,6 +56,21 @@ public class HomeBookInfoCacheManager {
             List<BookInfo> bookInfos = bookInfoMapper.selectList(bookInfoQueryWrapper);
             //封装，返回
             if (!CollectionUtils.isEmpty(bookInfos)) {
+                /*
+                * 这段代码实现了 列表到Map的转换 ，
+                * 核心目的是将bookInfos列表中的元素按BookInfo对象的唯一ID（Long类型）快速索引，
+                * 以便后续快速查找。
+                *
+                键提取逻辑（BookInfo::getId）
+                通过方法引用提取BookInfo的ID作为Map的键，将每个对象关联到唯一标识符，确保查找时间为O(1)。
+
+                值映射优化（Function.identity()）
+                使用Function.identity()表示直接保留原始对象作为值。
+
+                优势：避免创建额外的对象，提高性能。
+                替代写法：bookInfo -> bookInfo（功能等价，但Function.identity()代码更简洁）
+                *
+                * */
                 Map<Long, BookInfo> bookInfoMap = bookInfos.stream()
                         .collect(Collectors.toMap(BookInfo::getId, Function.identity()));
                 return homeBooks.stream().map(v -> {

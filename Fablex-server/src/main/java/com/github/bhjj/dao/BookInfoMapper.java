@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.bhjj.dto.BookSearchDTO;
 import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.vo.BookInfoVO;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -22,4 +23,11 @@ public interface BookInfoMapper extends BaseMapper<BookInfo> {
      * @return 返回结果
      * */
     List<BookInfo> searchBooks(IPage<BookInfoVO> page, BookSearchDTO condition);
+
+    /**
+     * 增加小说点击量
+     * @param bookId
+     */
+    @Update("update book_info set visit_count = visit_count + 1 where id = #{bookId}")
+    void addVisitCount(Long bookId);
 }

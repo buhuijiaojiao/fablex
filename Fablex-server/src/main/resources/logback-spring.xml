@@ -62,7 +62,7 @@
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="FILE"/>
         </logger>
-        <logger name="org.zalando.logbook" level="TRACE" additivity="false">
+        <logger name="org.zalando.logbook" level="DEBUG" additivity="false">
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="FILE"/>
         </logger>

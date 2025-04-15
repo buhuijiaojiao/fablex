@@ -1,10 +1,7 @@
 package com.github.bhjj.service;
 
 import com.github.bhjj.resp.Result;
-import com.github.bhjj.vo.BookCategoryVO;
-import com.github.bhjj.vo.BookContentAboutVO;
-import com.github.bhjj.vo.BookInfoVO;
-import com.github.bhjj.vo.BookRankVO;
+import com.github.bhjj.vo.*;
 
 import java.util.List;
 
@@ -51,4 +48,30 @@ public interface BookService {
      * @return
      */
     Result<BookContentAboutVO> getBookContentById(Long chapterId);
+
+    /**
+     * 章节目录查询
+     * @param bookId
+     * @return
+     */
+    Result<List<BookChapterVO>> listChapter(Long bookId);
+
+    /**
+     * 获取下一章ID接口
+     * @param chapterId
+     * @return
+     */
+    Result<Long> getNextChapterId(Long chapterId);
+
+    /**
+     * 获取上一章ID接口
+     * @param chapterId
+     * @return
+     */
+    Result<Long> getPreChapterId(Long chapterId);
+
+    /**
+     * 增加小说点击量接口
+     */
+    Result<Void> addVisitCount(Long bookId);
 }

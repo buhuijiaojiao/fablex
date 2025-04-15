@@ -1,6 +1,11 @@
 package com.github.bhjj.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.bhjj.constant.DatabaseConsts;
+import com.github.bhjj.dao.BookChapterMapper;
+import com.github.bhjj.dao.BookInfoMapper;
 import com.github.bhjj.entity.BookChapter;
+import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.manager.cache.*;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.BookService;
@@ -12,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.print.Book;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author ZhangXianDuo
@@ -31,6 +37,8 @@ public class BookServiceImpl implements BookService {
     private final BookChapterCacheManager bookChapterCacheManager;
 
     private final BookContentCacheManager bookContentCacheManager;
+    private final BookChapterMapper bookChapterMapper;
+    private final BookInfoMapper bookInfoMapper;
 
     /**
      *  小说列表查询接口
@@ -98,5 +106,90 @@ public class BookServiceImpl implements BookService {
                         .bookContent(bookContent)
                         .build()
         );
+    }
+
+
+    /**
+     * 章节目录查询
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Result<List<BookChapterVO>> listChapter(Long bookId) {
+        QueryWrapper<BookChapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper
+                .eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId)
+                .orderByAsc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM);
+        return Result.success(bookChapterMapper.selectList(queryWrapper).stream().map(
+                v-> BookChapterVO.builder()
+                        .id(v.getId())
+                        .bookId(v.getBookId())
+                        .chapterNum(v.getChapterNum())
+                        .chapterName(v.getChapterName())
+                        .chapterWordCount(v.getWordCount())
+                        .chapterUpdateTime(v.getUpdateTime())
+                        .isVip(v.getIsVip())
+                        .build()
+        ).toList());
+    }
+
+    /**
+     * 获取下一章ID接口
+     * @param chapterId
+     * @return
+     */
+    @Override
+    public Result<Long> getNextChapterId(Long chapterId) {
+        // 查询小说ID 和 章节号
+        BookChapterVO chapter = bookChapterCacheManager.getChapter(chapterId);
+        Long bookId = chapter.getBookId();
+        Integer chapterNum = chapter.getChapterNum();
+        // 查询下一章信息并返回章节ID
+        QueryWrapper<BookChapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId)
+                .gt(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM, chapterNum)
+                .orderByAsc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM)
+                .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
+        return Result.success(
+                Optional.ofNullable(bookChapterMapper.selectOne(queryWrapper))
+                        .map(BookChapter::getId)
+                        .orElse(null)
+        );
+    }
+
+    /**
+     * 获取上一章ID接口
+     * @param chapterId
+     * @return
+     */
+    @Override
+    public Result<Long> getPreChapterId(Long chapterId) {
+        // 查询小说ID 和 章节号
+        BookChapterVO chapter = bookChapterCacheManager.getChapter(chapterId);
+        Long bookId = chapter.getBookId();
+        Integer chapterNum = chapter.getChapterNum();
+        // 查询上一章信息并返回章节ID
+        QueryWrapper<BookChapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId)
+                .lt(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM, chapterNum)
+                .orderByDesc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM)
+                .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
+        return Result.success(
+                Optional.ofNullable(bookChapterMapper.selectOne(queryWrapper))
+                        .map(BookChapter::getId)
+                        .orElse(null)
+        );
+    }
+
+
+    /**
+     * 增加小说点击量接口
+     */
+    @Override
+    public Result<Void> addVisitCount(Long bookId) {
+//      TODO   待优化:这里直接更新数据库，更新数据库硬抗并发延迟长,点击量时效不能保证（查询数据是对缓存），
+//       可以选择直接更新缓存，然后进行数据同步，但采用的是本地缓存，多个实例间缓存不同步，这又是一个问题
+        bookInfoMapper.addVisitCount(bookId);
+        return Result.success();
     }
 }

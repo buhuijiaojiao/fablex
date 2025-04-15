@@ -8,4 +8,5 @@ import com.github.bhjj.entity.BookChapter;
  * @date 2025/4/15
  */
 public interface BookChapterMapper extends BaseMapper<BookChapter> {
+
 }

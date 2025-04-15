@@ -164,4 +164,14 @@ public class BookController {
     public Result<List<BookInfoVO>> listRecBooks(@Parameter(description = "小说 ID") Long bookId) throws NoSuchAlgorithmException {
         return bookService.listRecBooks(bookId);
     }
+
+    /**
+     * 小说最新评论查询接口
+     */
+    @Operation(summary = "小说最新评论查询接口")
+    @GetMapping("comment/newest_list")
+    public Result<BookCommentVO> listNewestComments(
+            @Parameter(description = "小说ID") Long bookId) {
+        return bookService.listNewestComments(bookId);
+    }
 }

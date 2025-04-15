@@ -16,8 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.awt.print.Book;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * @author ZhangXianDuo
@@ -28,6 +32,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
+    private static final Integer REC_BOOK_COUNT = 4;
+
     private final BookCategoryCacheManager bookCategoryCacheManager;
 
     private final BookRankCacheManager bookRankCacheManager;
@@ -37,7 +43,9 @@ public class BookServiceImpl implements BookService {
     private final BookChapterCacheManager bookChapterCacheManager;
 
     private final BookContentCacheManager bookContentCacheManager;
+
     private final BookChapterMapper bookChapterMapper;
+
     private final BookInfoMapper bookInfoMapper;
 
     /**
@@ -191,5 +199,77 @@ public class BookServiceImpl implements BookService {
 //       可以选择直接更新缓存，然后进行数据同步，但采用的是本地缓存，多个实例间缓存不同步，这又是一个问题
         bookInfoMapper.addVisitCount(bookId);
         return Result.success();
+    }
+
+    /**
+     * 小说最新章节相关信息查询接口
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Result<BookChapterAboutVO> getLastChapterAbout(Long bookId) {
+        //查询小说信息
+        BookInfoVO bookInfoVO = bookInfoCacheManager.getBookById(bookId);
+        //查询最新章节信息
+        BookChapterVO bookChapterVO = bookChapterCacheManager.getChapter(bookInfoVO.getLastChapterId());
+        //章节内容
+        String content = bookContentCacheManager.getBookContentByChapterId(bookChapterVO.getId());
+        // 查询章节总数
+        QueryWrapper<BookChapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId);
+        Long chapterTotal = bookChapterMapper.selectCount(queryWrapper);
+
+        //组装数据，返回
+        return Result.success(
+                BookChapterAboutVO.builder()
+                        .chapterInfo(bookChapterVO)
+                        .chapterTotal(chapterTotal)
+                        //概要30字
+                        .contentSummary(content.substring(0,30))
+                        .build()
+        );
+    }
+
+    /**
+     * 小说推荐列表查询接口
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Result<List<BookInfoVO>> listRecBooks(Long bookId) throws NoSuchAlgorithmException {
+        //查询出当前小说分类id
+        Long categoryId = bookInfoCacheManager.getBookById(bookId).getCategoryId();
+        //根据id查询同类作品最新作品ID集合
+        List<Long> lastUpdateIdList = bookInfoCacheManager.getLastUpdateIdList(categoryId);
+
+        List<BookInfoVO> list = new ArrayList<>();
+        List<Integer> recIdIndexList = new ArrayList<>();
+
+        //推荐算法
+        int count = 0;
+        Random rand = SecureRandom.getInstanceStrong();
+        //500以内不放回抽取4次bookId
+        while (count < REC_BOOK_COUNT) {
+            int recIdIndex = rand.nextInt(lastUpdateIdList.size());
+            if (!recIdIndexList.contains(recIdIndex)) {
+                recIdIndexList.add(recIdIndex);
+                bookId = lastUpdateIdList.get(recIdIndex);
+                BookInfoVO bookInfoVO = bookInfoCacheManager.getBookById(bookId);
+                list.add(bookInfoVO);
+                count++;
+            }
+        }
+        return Result.success(list);
+
+    }
+
+    /**
+     * 小说最新评论查询接口
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Result<BookCommentVO> listNewestComments(Long bookId) {
+        return null;
     }
 }

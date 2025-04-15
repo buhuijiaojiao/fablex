@@ -3,6 +3,7 @@ package com.github.bhjj.service;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.vo.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -74,4 +75,25 @@ public interface BookService {
      * 增加小说点击量接口
      */
     Result<Void> addVisitCount(Long bookId);
+
+    /**
+     * 小说最新章节相关信息查询接口
+     * @param bookId
+     * @return
+     */
+    Result<BookChapterAboutVO> getLastChapterAbout(Long bookId);
+
+    /**
+     * 小说推荐列表查询接口
+     * @param bookId
+     * @return
+     */
+    Result<List<BookInfoVO>> listRecBooks(Long bookId) throws NoSuchAlgorithmException;
+
+    /**
+     * 小说最新评论查询接口
+     * @param bookId
+     * @return
+     */
+    Result<BookCommentVO> listNewestComments(Long bookId);
 }

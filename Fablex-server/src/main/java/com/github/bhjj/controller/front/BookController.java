@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -140,5 +141,27 @@ public class BookController {
     @GetMapping("update_rank")
     public Result<List<BookRankVO>> listUpdateRankBooks() {
         return bookService.listUpdateRankBooks();
+    }
+
+    /**
+     * 小说最新章节相关信息查询接口
+     * @param bookId
+     * @return
+     */
+    @Operation(summary = "小说最新章节相关信息查询接口")
+    @GetMapping("last_chapter/about")
+    public Result<BookChapterAboutVO> getLastChapterAbout(@Parameter(description = "小说 ID") Long bookId){
+        return bookService.getLastChapterAbout(bookId);
+    }
+
+    /**
+     * 小说推荐列表查询接口
+     * @param bookId
+     * @return
+     */
+    @Operation(summary = "小说推荐列表查询接口")
+    @GetMapping("rec_list")
+    public Result<List<BookInfoVO>> listRecBooks(@Parameter(description = "小说 ID") Long bookId) throws NoSuchAlgorithmException {
+        return bookService.listRecBooks(bookId);
     }
 }

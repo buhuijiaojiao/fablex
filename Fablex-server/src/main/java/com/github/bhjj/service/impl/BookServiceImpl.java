@@ -3,25 +3,25 @@ package com.github.bhjj.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.bhjj.constant.DatabaseConsts;
 import com.github.bhjj.dao.BookChapterMapper;
+import com.github.bhjj.dao.BookCommentMapper;
 import com.github.bhjj.dao.BookInfoMapper;
+import com.github.bhjj.dao.UserInfoMapper;
 import com.github.bhjj.entity.BookChapter;
-import com.github.bhjj.entity.BookInfo;
+import com.github.bhjj.entity.BookComment;
+import com.github.bhjj.entity.UserInfo;
 import com.github.bhjj.manager.cache.*;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.BookService;
 import com.github.bhjj.vo.*;
-import com.github.bhjj.vo.BookContentAboutVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Book;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author ZhangXianDuo
@@ -48,8 +48,12 @@ public class BookServiceImpl implements BookService {
 
     private final BookInfoMapper bookInfoMapper;
 
+    private final BookCommentMapper bookCommentMapper;
+    private final UserInfoMapper userInfoMapper;
+
     /**
-     *  小说列表查询接口
+     * 小说列表查询接口
+     *
      * @param workDirection
      * @return
      */
@@ -59,7 +63,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     *小说点击榜接口
+     * 小说点击榜接口
      *
      * @return
      */
@@ -67,6 +71,7 @@ public class BookServiceImpl implements BookService {
     public Result<List<BookRankVO>> listVisitRankBooks() {
         return Result.success(bookRankCacheManager.listVisitRankBooks());
     }
+
     /**
      * 新书榜接口
      */
@@ -77,6 +82,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 更新榜接口
+     *
      * @return
      */
     @Override
@@ -85,7 +91,8 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     *根据id小说查询接口
+     * 根据id小说查询接口
+     *
      * @param bookId
      * @return
      */
@@ -96,6 +103,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 根据章节id查询小说信息接口
+     *
      * @param chapterId
      * @return
      */
@@ -119,6 +127,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 章节目录查询
+     *
      * @param bookId
      * @return
      */
@@ -129,7 +138,7 @@ public class BookServiceImpl implements BookService {
                 .eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId)
                 .orderByAsc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM);
         return Result.success(bookChapterMapper.selectList(queryWrapper).stream().map(
-                v-> BookChapterVO.builder()
+                v -> BookChapterVO.builder()
                         .id(v.getId())
                         .bookId(v.getBookId())
                         .chapterNum(v.getChapterNum())
@@ -143,6 +152,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 获取下一章ID接口
+     *
      * @param chapterId
      * @return
      */
@@ -167,6 +177,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 获取上一章ID接口
+     *
      * @param chapterId
      * @return
      */
@@ -203,6 +214,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 小说最新章节相关信息查询接口
+     *
      * @param bookId
      * @return
      */
@@ -225,13 +237,14 @@ public class BookServiceImpl implements BookService {
                         .chapterInfo(bookChapterVO)
                         .chapterTotal(chapterTotal)
                         //概要30字
-                        .contentSummary(content.substring(0,30))
+                        .contentSummary(content.substring(0, 30))
                         .build()
         );
     }
 
     /**
      * 小说推荐列表查询接口
+     *
      * @param bookId
      * @return
      */
@@ -265,11 +278,65 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 小说最新评论查询接口
+     *
      * @param bookId
      * @return
      */
     @Override
     public Result<BookCommentVO> listNewestComments(Long bookId) {
-        return null;
+        //TODO还有待测试，因为评论太少
+
+        //评论总数
+        QueryWrapper<BookComment> commentCountQueryWrapper = new QueryWrapper<>();
+        commentCountQueryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId);
+        Long commentTotal = bookCommentMapper.selectCount(commentCountQueryWrapper);
+
+        BookCommentVO bookCommentVO = null;
+        if (commentTotal > 0) {
+            //查询所有评论信息
+            QueryWrapper<BookComment> queryWrapper = new QueryWrapper<>();
+            queryWrapper
+                    .eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId)
+                    .orderByDesc(DatabaseConsts.CommonColumnEnum.CREATE_TIME.getName())
+                    .last(DatabaseConsts.SqlEnum.LIMIT_5.getSql());
+
+
+            List<BookComment> bookComments = bookCommentMapper.selectList(queryWrapper);
+
+            //评论的用户信息
+            List<Long> userIds = bookComments.stream().map(BookComment::getUserId).toList();
+            //索引
+            Map<Long, UserInfo> users = userInfoMapper.selectBatchIds(userIds).stream()
+                    .collect(Collectors.toMap(UserInfo::getId, Function.identity()));
+
+            //评论列表
+            List<BookCommentVO.CommentInfo> comments = bookComments.stream().map(v ->
+                    BookCommentVO.CommentInfo.builder()
+                            .id(v.getId())
+                            .commentContent(v.getCommentContent())
+                            //依照用户id从索引中取出需要的用户信息
+                            .commentUser(users.get(v.getUserId()).getUsername())
+                            .commentUserId(v.getUserId())
+                            .commentUserPhoto(users.get(v.getUserId()).getUserPhoto())
+
+                            .commentTime(v.getUpdateTime())
+                            .build()
+            ).toList();
+
+            bookCommentVO = BookCommentVO.builder()
+                    //评论总数
+                    .commentTotal(commentTotal)
+                    .comments(comments)
+                    .build();
+
+        } else {
+            bookCommentVO = BookCommentVO.builder()
+                    .commentTotal(commentTotal)
+                    .comments(null)
+                    .build();
+        }
+
+        return Result.success(bookCommentVO);
+
     }
 }

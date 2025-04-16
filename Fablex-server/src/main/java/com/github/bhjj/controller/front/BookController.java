@@ -172,7 +172,6 @@ public class BookController {
     @GetMapping("comment/newest_list")
     public Result<BookCommentVO> listNewestComments(
             @Parameter(description = "小说ID") Long bookId) {
-        //TODO 待办
         return bookService.listNewestComments(bookId);
     }
 }

@@ -1,11 +1,14 @@
 package com.github.bhjj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.bhjj.constant.DatabaseConsts;
 import com.github.bhjj.dao.BookChapterMapper;
 import com.github.bhjj.dao.BookCommentMapper;
 import com.github.bhjj.dao.BookInfoMapper;
 import com.github.bhjj.dao.UserInfoMapper;
+import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.BookChapter;
 import com.github.bhjj.entity.BookComment;
 import com.github.bhjj.entity.UserInfo;
@@ -16,6 +19,7 @@ import com.github.bhjj.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -338,5 +342,56 @@ public class BookServiceImpl implements BookService {
 
         return Result.success(bookCommentVO);
 
+    }
+
+    /**
+     * 章节管理分页查询
+     * @param bookId
+     * @param dto
+     * @return
+     */
+    @Override
+    public Result<PageVO<BookChapterVO>> listBookChapters(Long bookId, PageBean dto) {
+        //构建查询条件
+        IPage<BookChapter> page = Page.of(dto.getPageNum(), dto.getPageSize());
+        QueryWrapper<BookChapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper
+                .eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, bookId)
+                .orderByDesc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM);
+        //查询
+        IPage<BookChapter> bookChapterPage = bookChapterMapper.selectPage(page, queryWrapper);
+        //组装返回
+        return Result.success(
+                new PageVO<>(dto.getPageNum(), dto.getPageSize(), bookChapterPage.getTotal(),
+                        bookChapterPage.getRecords().stream().map(v->BookChapterVO.builder()
+                                .id(v.getId())
+                                .bookId(v.getBookId())
+                                .chapterNum(v.getChapterNum())
+                                .chapterName(v.getChapterName())
+                                .chapterWordCount(v.getWordCount())
+                                .chapterUpdateTime(v.getUpdateTime())
+                                .isVip(v.getIsVip())
+                                .build()).toList()
+                )
+        );
+    }
+
+    /**
+     * 删除章节接口
+     * @param chapterId
+     * @return
+     */
+    @Override
+    @Transactional
+    public Result<Void> deleteBookChapter(Long chapterId) {
+        //TODO待办章节删除接口
+        //删除内容表相关内容
+        //删除章节信息表记录
+        //看是否是最新章节，是的话小说信息表也要更新
+        //更新任务推送到mq，待消费（更新到es）
+
+
+
+        return null;
     }
 }

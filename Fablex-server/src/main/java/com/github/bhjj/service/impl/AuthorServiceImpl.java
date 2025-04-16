@@ -1,20 +1,30 @@
 package com.github.bhjj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.bhjj.constant.DatabaseConsts;
+import com.github.bhjj.context.UserHolder;
 import com.github.bhjj.dao.AuthorInfoMapper;
+import com.github.bhjj.dao.BookInfoMapper;
 import com.github.bhjj.dto.AuthorRegisterDTO;
+import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.AuthorInfo;
+import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.exception.BusinessException;
 import com.github.bhjj.manager.cache.AuthorInfoCacheManager;
+import com.github.bhjj.manager.cache.BookInfoCacheManager;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.AuthorService;
+import com.github.bhjj.vo.BookInfoVO;
+import com.github.bhjj.vo.PageVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,7 +39,10 @@ import java.util.Objects;
 public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorInfoMapper authorInfoMapper;
+
     private final AuthorInfoCacheManager authorInfoCacheManager;
+
+    private final BookInfoMapper bookInfoMapper;
 
     /**
      * 注册
@@ -79,5 +92,38 @@ public class AuthorServiceImpl implements AuthorService {
             return Result.success(null);
         }
         return Result.success(authorInfo.getStatus());
+    }
+
+    /**
+     * 名下小说查询
+     * @return
+     */
+    @Override
+    public Result<PageVO<BookInfoVO>> listBooks(PageBean dto) {
+        //构建分页条件
+        IPage<BookInfo> page = Page.of(dto.getPageNum(), dto.getPageSize());
+        QueryWrapper<BookInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper
+                .eq(DatabaseConsts.BookTable.AUTHOR_ID, UserHolder.getAuthorId())
+                .orderByDesc(DatabaseConsts.CommonColumnEnum.CREATE_TIME.getName());
+        //查询
+        IPage<BookInfo> bookInfoPage = bookInfoMapper.selectPage(page, queryWrapper);
+
+        return Result.success(
+                new PageVO<>(dto.getPageNum(),dto.getPageSize(),bookInfoPage.getTotal(),
+                        bookInfoPage.getRecords().stream().map(
+                                //只取用需要的属性
+                                v->BookInfoVO.builder()
+                                        .id(v.getId())
+                                        .bookName(v.getBookName())
+                                        .picUrl(v.getPicUrl())
+                                        .categoryName(v.getCategoryName())
+                                        .wordCount(v.getWordCount())
+                                        .visitCount(v.getVisitCount())
+                                        .updateTime(v.getUpdateTime())
+                                        .build()).toList()
+                )
+        );
+
     }
 }

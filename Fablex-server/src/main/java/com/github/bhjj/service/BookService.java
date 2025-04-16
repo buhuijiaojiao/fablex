@@ -1,5 +1,6 @@
 package com.github.bhjj.service;
 
+import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.vo.*;
 
@@ -96,4 +97,19 @@ public interface BookService {
      * @return
      */
     Result<BookCommentVO> listNewestComments(Long bookId);
+
+    /**
+     * 章节管理分页查询
+     * @param bookId
+     * @param dto
+     * @return
+     */
+    Result<PageVO<BookChapterVO>> listBookChapters(Long bookId, PageBean dto);
+
+    /**
+     * 删除章节接口
+     * @param chapterId
+     * @return
+     */
+    Result<Void> deleteBookChapter(Long chapterId);
 }

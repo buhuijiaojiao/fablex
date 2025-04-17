@@ -5,6 +5,7 @@ import com.github.bhjj.constant.ApiRouterConsts;
 import com.github.bhjj.context.UserHolder;
 import com.github.bhjj.dto.AuthorRegisterDTO;
 import com.github.bhjj.dto.ChapterAddDTO;
+import com.github.bhjj.dto.ChapterUpdateDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.resp.Result;
@@ -12,6 +13,7 @@ import com.github.bhjj.service.AuthorService;
 import com.github.bhjj.service.BookService;
 import com.github.bhjj.vo.BookChapterVO;
 import com.github.bhjj.vo.BookInfoVO;
+import com.github.bhjj.vo.ChapterContentVO;
 import com.github.bhjj.vo.PageVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -111,6 +113,30 @@ public class AuthorController {
         return bookService.addBookChapter(chapterAddDTO);
     }
 
+    /**
+     *  根据id查询小说章节接口
+     * @param chapterId
+     * @return
+     */
+    @Operation(summary = "根据id查询小说章节接口")
+    @GetMapping("book/chapter/{chapterId}")
+    public Result<ChapterContentVO> getBookChapterById(
+            @Parameter(description = "章节ID") @PathVariable("chapterId") Long chapterId) {
+        return bookService.getBookChapterById(chapterId);
+    }
+
+    /**
+     *  更新小说章节接口
+     * @param chapterId
+     * @return
+     */
+    @Operation(summary = "更新小说章节接口")
+    @PutMapping("book/chapter/{chapterId}")
+    public Result<Void> updateBookChapter(
+            @Parameter(description = "章节ID") @PathVariable("chapterId") Long chapterId,
+            @Valid @RequestBody ChapterUpdateDTO chapterUpdateDTO ) {
+        return bookService.updateBookChapter(chapterId,chapterUpdateDTO);
+    }
 
 
 }

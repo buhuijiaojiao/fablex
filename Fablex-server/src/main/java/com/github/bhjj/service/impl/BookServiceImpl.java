@@ -7,6 +7,7 @@ import com.github.bhjj.constant.DatabaseConsts;
 import com.github.bhjj.context.UserHolder;
 import com.github.bhjj.dao.*;
 import com.github.bhjj.dto.ChapterAddDTO;
+import com.github.bhjj.dto.ChapterUpdateDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.*;
 import com.github.bhjj.enumeration.ErrorCodeEnum;
@@ -453,7 +454,8 @@ public class BookServiceImpl implements BookService {
      * @return
      */
     @Override
-    @Transactional
+    //默认：当抛出运行时异常才回滚
+    @Transactional(rollbackFor = Exception.class)
     public Result<Void> addBookChapter(ChapterAddDTO chapterAddDTO) {
         // 校验该作品是否属于当前作家
         BookInfo bookInfo = bookInfoMapper.selectById(chapterAddDTO.getBookId());
@@ -473,7 +475,6 @@ public class BookServiceImpl implements BookService {
             //要考虑是不是第一章
             chapterNum = lastChapterNum + 1;
         }
-        log.info("旧的小说信息:{}",oldBookInfo);
 
         //插入新章节信息
         BookChapter newBookChapter = new BookChapter();
@@ -487,8 +488,6 @@ public class BookServiceImpl implements BookService {
         //自动返回主键id
         bookChapterMapper.insert(newBookChapter);
 
-        log.info("插入成功新章节信息:{}",newBookChapter);
-
 
         //插入新章节内容
         BookContent bookContent = new BookContent();
@@ -497,8 +496,6 @@ public class BookServiceImpl implements BookService {
         bookContent.setUpdateTime(LocalDateTime.now());
         bookContent.setCreateTime(LocalDateTime.now());
         bookContentMapper.insert(bookContent);
-
-        log.info("插入成功新章节内容:{}",bookContent);
 
         //修改小说信息
         BookInfo newBookInfo = new BookInfo();
@@ -514,6 +511,80 @@ public class BookServiceImpl implements BookService {
 
         //推送要更新的小说id到mq
         amqpMsgManager.sendBookChangeMsg(chapterAddDTO.getBookId());
+        return Result.success();
+    }
+
+    /**
+     * 根据id查询章节信息和章节内容
+     * @param chapterId
+     * @return
+     */
+    @Override
+    public Result<ChapterContentVO> getBookChapterById(Long chapterId) {
+        BookChapterVO bookChapter = bookChapterCacheManager.getChapter(chapterId);
+        String content = bookContentCacheManager.getBookContentByChapterId(chapterId);
+        return Result.success(
+                ChapterContentVO.builder()
+                        .chapterName(bookChapter.getChapterName())
+                        .chapterContent(content)
+                        .isVip(bookChapter.getIsVip())
+                        .build()
+        );
+    }
+
+    /**
+     * 章节信息更新
+     * @param chapterId
+     * @param chapterUpdateDTO
+     * @return
+     */
+    @Override
+    @Transactional
+    public Result<Void> updateBookChapter(Long chapterId, ChapterUpdateDTO chapterUpdateDTO) {
+        //查询章节信息
+        BookChapterVO oldBookChapter = bookChapterCacheManager.getChapter(chapterId);
+        //查询小说信息
+        BookInfoVO oldBookInfo = bookInfoCacheManager.getBookById(oldBookChapter.getBookId());
+
+        //更新章节信息
+        BookChapter newBookChapter = new BookChapter();
+        newBookChapter.setId(chapterId);
+        newBookChapter.setChapterName(chapterUpdateDTO.getChapterName());
+        newBookChapter.setUpdateTime(LocalDateTime.now());
+        newBookChapter.setIsVip(chapterUpdateDTO.getIsVip());
+        newBookChapter.setWordCount(chapterUpdateDTO.getChapterContent().length());
+        bookChapterMapper.updateById(newBookChapter);
+
+        //更新章节内容
+        BookContent newBookContent = new BookContent();
+        newBookContent.setChapterId(chapterId);
+        newBookContent.setContent(chapterUpdateDTO.getChapterContent());
+        newBookContent.setUpdateTime(LocalDateTime.now());
+        QueryWrapper<BookContent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookContentTable.COLUMN_CHAPTER_ID, chapterId);
+        bookContentMapper.update(newBookContent,queryWrapper);
+
+        //更新小说信息
+        BookInfo newBookInfo = new BookInfo();
+        newBookInfo.setId(oldBookChapter.getBookId());
+        newBookInfo.setWordCount(oldBookInfo.getWordCount() +
+                chapterUpdateDTO.getChapterContent().length() - oldBookChapter.getChapterWordCount());
+        newBookInfo.setUpdateTime(LocalDateTime.now());
+        if(Objects.equals(oldBookInfo.getLastChapterId(), chapterId)) {
+            //是最新章节
+            newBookInfo.setLastChapterName(chapterUpdateDTO.getChapterName());
+            newBookInfo.setLastChapterUpdateTime(LocalDateTime.now());
+        }
+
+        bookInfoMapper.updateById(newBookInfo);
+
+        //清除缓存
+        bookInfoCacheManager.evictBookInfoCache(newBookChapter.getBookId());
+        bookChapterCacheManager.evictBookChapterCache(chapterId);
+        bookContentCacheManager.evictBookContentCache(chapterId);
+        //推送更新小说id到mq
+        amqpMsgManager.sendBookChangeMsg(newBookChapter.getBookId());
+
         return Result.success();
     }
 }

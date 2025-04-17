@@ -1,9 +1,11 @@
 package com.github.bhjj.service;
 
 import com.github.bhjj.dto.ChapterAddDTO;
+import com.github.bhjj.dto.ChapterUpdateDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.vo.*;
+import jakarta.validation.Valid;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -119,4 +121,19 @@ public interface BookService {
      * @return
      */
     Result<Void> addBookChapter(ChapterAddDTO chapterAddDTO);
+
+    /**
+     * 根据章节id查询章节信息
+     * @param chapterId
+     * @return
+     */
+    Result<ChapterContentVO> getBookChapterById(Long chapterId);
+
+    /**
+     * 章节信息更新接口
+     * @param chapterId
+     * @param chapterUpdateDTO
+     * @return
+     */
+    Result<Void> updateBookChapter(Long chapterId,ChapterUpdateDTO chapterUpdateDTO);
 }

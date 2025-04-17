@@ -1,5 +1,6 @@
 package com.github.bhjj.service;
 
+import com.github.bhjj.dto.ChapterAddDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.vo.*;
@@ -112,4 +113,10 @@ public interface BookService {
      * @return
      */
     Result<Void> deleteBookChapter(Long chapterId);
+
+    /**
+     * 新建章节接口
+     * @return
+     */
+    Result<Void> addBookChapter(ChapterAddDTO chapterAddDTO);
 }

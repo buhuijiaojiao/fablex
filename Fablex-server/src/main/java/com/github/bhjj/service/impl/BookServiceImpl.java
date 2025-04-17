@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.bhjj.constant.DatabaseConsts;
+import com.github.bhjj.context.UserHolder;
 import com.github.bhjj.dao.*;
+import com.github.bhjj.dto.ChapterAddDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.*;
+import com.github.bhjj.enumeration.ErrorCodeEnum;
 import com.github.bhjj.manager.cache.*;
 import com.github.bhjj.manager.mq.AmqpMsgManager;
 import com.github.bhjj.resp.Result;
@@ -15,6 +18,7 @@ import com.github.bhjj.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -441,6 +445,75 @@ public class BookServiceImpl implements BookService {
         //把更新的id推送到mq
         amqpMsgManager.sendBookChangeMsg(chapter.getBookId());
 
+        return Result.success();
+    }
+
+    /**
+     * 新建章节接口
+     * @return
+     */
+    @Override
+    @Transactional
+    public Result<Void> addBookChapter(ChapterAddDTO chapterAddDTO) {
+        // 校验该作品是否属于当前作家
+        BookInfo bookInfo = bookInfoMapper.selectById(chapterAddDTO.getBookId());
+        if (!Objects.equals(bookInfo.getAuthorId(), UserHolder.getAuthorId())) {
+            return Result.fail(ErrorCodeEnum.USER_UN_AUTH);
+        }
+        log.info("校验完成");
+
+        //查询小说总字数
+        BookInfo oldBookInfo = bookInfoMapper.selectById(chapterAddDTO.getBookId());
+        Integer oldWordCount = oldBookInfo.getWordCount();
+        //查询上一章的章节号
+        Long lastChapterId = oldBookInfo.getLastChapterId();
+        Integer lastChapterNum = bookChapterMapper.selectById(lastChapterId).getChapterNum();
+        int chapterNum = 0;
+        if(Objects.nonNull(lastChapterNum)) {
+            //要考虑是不是第一章
+            chapterNum = lastChapterNum + 1;
+        }
+        log.info("旧的小说信息:{}",oldBookInfo);
+
+        //插入新章节信息
+        BookChapter newBookChapter = new BookChapter();
+        newBookChapter.setBookId(chapterAddDTO.getBookId());
+        newBookChapter.setChapterNum(chapterNum);
+        newBookChapter.setChapterName(chapterAddDTO.getChapterName());
+        newBookChapter.setIsVip(chapterAddDTO.getIsVip());
+        newBookChapter.setWordCount(chapterAddDTO.getChapterContent().length());
+        newBookChapter.setUpdateTime(LocalDateTime.now());
+        newBookChapter.setCreateTime(LocalDateTime.now());
+        //自动返回主键id
+        bookChapterMapper.insert(newBookChapter);
+
+        log.info("插入成功新章节信息:{}",newBookChapter);
+
+
+        //插入新章节内容
+        BookContent bookContent = new BookContent();
+        bookContent.setChapterId(newBookChapter.getId());
+        bookContent.setContent(chapterAddDTO.getChapterContent());
+        bookContent.setUpdateTime(LocalDateTime.now());
+        bookContent.setCreateTime(LocalDateTime.now());
+        bookContentMapper.insert(bookContent);
+
+        log.info("插入成功新章节内容:{}",bookContent);
+
+        //修改小说信息
+        BookInfo newBookInfo = new BookInfo();
+        newBookInfo.setId(chapterAddDTO.getBookId());
+        newBookInfo.setLastChapterId(newBookChapter.getId());
+        newBookInfo.setLastChapterName(chapterAddDTO.getChapterName());
+        newBookInfo.setWordCount(oldWordCount + chapterAddDTO.getChapterContent().length());
+        newBookInfo.setLastChapterUpdateTime(LocalDateTime.now());
+        bookInfoMapper.updateById(newBookInfo);
+
+        //删除相关缓存保证一致性
+        bookInfoCacheManager.evictBookInfoCache(chapterAddDTO.getBookId());
+
+        //推送要更新的小说id到mq
+        amqpMsgManager.sendBookChangeMsg(chapterAddDTO.getBookId());
         return Result.success();
     }
 }

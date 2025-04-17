@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.bhjj.constant.ApiRouterConsts;
 import com.github.bhjj.context.UserHolder;
 import com.github.bhjj.dto.AuthorRegisterDTO;
+import com.github.bhjj.dto.ChapterAddDTO;
 import com.github.bhjj.dto.PageBean;
 import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.resp.Result;
@@ -94,6 +95,22 @@ public class AuthorController {
             @Parameter(description = "章节ID") @PathVariable("chapterId") Long chapterId) {
         return bookService.deleteBookChapter(chapterId);
     }
+
+    /**
+     * 小说新建章节接口
+     * @param bookId
+     * @param chapterAddDTO
+     * @return
+     */
+    @Operation(summary = "小说新建章节接口")
+    @PostMapping("book/chapter/{bookId}")
+    public Result<Void> addBookChapter(
+            @Parameter(description = "章节ID") @PathVariable("bookId") Long bookId,
+            @Valid @RequestBody ChapterAddDTO chapterAddDTO) {
+        chapterAddDTO.setBookId(bookId);
+        return bookService.addBookChapter(chapterAddDTO);
+    }
+
 
 
 }

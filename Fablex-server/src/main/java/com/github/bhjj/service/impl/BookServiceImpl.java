@@ -4,25 +4,23 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.bhjj.constant.DatabaseConsts;
-import com.github.bhjj.dao.BookChapterMapper;
-import com.github.bhjj.dao.BookCommentMapper;
-import com.github.bhjj.dao.BookInfoMapper;
-import com.github.bhjj.dao.UserInfoMapper;
+import com.github.bhjj.dao.*;
 import com.github.bhjj.dto.PageBean;
-import com.github.bhjj.entity.BookChapter;
-import com.github.bhjj.entity.BookComment;
-import com.github.bhjj.entity.UserInfo;
+import com.github.bhjj.entity.*;
 import com.github.bhjj.manager.cache.*;
+import com.github.bhjj.manager.mq.AmqpMsgManager;
 import com.github.bhjj.resp.Result;
 import com.github.bhjj.service.BookService;
 import com.github.bhjj.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,7 +51,12 @@ public class BookServiceImpl implements BookService {
     private final BookInfoMapper bookInfoMapper;
 
     private final BookCommentMapper bookCommentMapper;
+
     private final UserInfoMapper userInfoMapper;
+
+    private final BookContentMapper bookContentMapper;
+
+    private final AmqpMsgManager amqpMsgManager;
 
     /**
      * 小说列表查询接口
@@ -346,6 +349,7 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 章节管理分页查询
+     *
      * @param bookId
      * @param dto
      * @return
@@ -363,7 +367,7 @@ public class BookServiceImpl implements BookService {
         //组装返回
         return Result.success(
                 new PageVO<>(dto.getPageNum(), dto.getPageSize(), bookChapterPage.getTotal(),
-                        bookChapterPage.getRecords().stream().map(v->BookChapterVO.builder()
+                        bookChapterPage.getRecords().stream().map(v -> BookChapterVO.builder()
                                 .id(v.getId())
                                 .bookId(v.getBookId())
                                 .chapterNum(v.getChapterNum())
@@ -378,20 +382,65 @@ public class BookServiceImpl implements BookService {
 
     /**
      * 删除章节接口
+     *
      * @param chapterId
      * @return
      */
     @Override
     @Transactional
     public Result<Void> deleteBookChapter(Long chapterId) {
-        //TODO待办章节删除接口
-        //删除内容表相关内容
-        //删除章节信息表记录
-        //看是否是最新章节，是的话小说信息表也要更新
-        //更新任务推送到mq，待消费（更新到es）
+        // 1.查询章节信息
+        BookChapterVO chapter = bookChapterCacheManager.getChapter(chapterId);
+        // 2.查询小说信息
+        BookInfoVO bookInfo = bookInfoCacheManager.getBookById(chapter.getBookId());
 
+        //3.删除章节信息表记录
+        bookChapterMapper.deleteById(chapterId);
+        //4.删除内容表相关内容
+        QueryWrapper<BookContent> deleteBookContentWrapper = new QueryWrapper<>();
+        deleteBookContentWrapper.eq(DatabaseConsts.BookContentTable.COLUMN_CHAPTER_ID, chapterId);
+        bookContentMapper.delete(deleteBookContentWrapper);
+        // 5.更新小说信息
+        BookInfo newBookInfo = new BookInfo();
+        newBookInfo.setId(bookInfo.getId());
+        newBookInfo.setUpdateTime(LocalDateTime.now());
+        newBookInfo.setWordCount(bookInfo.getWordCount() - chapter.getChapterWordCount());
+        //看是否是最新章节
+        if (Objects.equals(bookInfo.getLastChapterId(), chapterId)) {
+            //查询出删除后的最新章节
+            //这样SQL比较快
+            QueryWrapper<BookChapter> bookChapterQueryWrapper = new QueryWrapper<>();
+            bookChapterQueryWrapper.eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, chapter.getBookId())
+                    .orderByDesc(DatabaseConsts.BookChapterTable.COLUMN_CHAPTER_NUM)
+                    .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
+            BookChapter lastBookChapter = bookChapterMapper.selectOne(bookChapterQueryWrapper);
+            Long lastChapterId = 0L;
+            String lastChapterName = "";
+            LocalDateTime lastChapterUpdateTime = null;
+            //考虑删除的是第一章的情况
+            if (Objects.nonNull(lastBookChapter)) {
+                lastChapterId = lastBookChapter.getId();
+                lastChapterName = lastBookChapter.getChapterName();
+                lastChapterUpdateTime = lastBookChapter.getUpdateTime();
+            }
+            //提取需要的字段
+            newBookInfo.setLastChapterId(lastBookChapter.getId());
+            newBookInfo.setLastChapterName(lastBookChapter.getChapterName());
+            newBookInfo.setLastChapterUpdateTime(lastBookChapter.getUpdateTime());
+        }
+        //更新改变的字段
+        bookInfoMapper.updateById(newBookInfo);
+        //清除缓存
+        // 6.清理章节信息缓存
+        bookChapterCacheManager.evictBookChapterCache(chapterId);
+        // 7.清理章节内容缓存
+        bookContentCacheManager.evictBookContentCache(chapterId);
+        // 8.清理小说信息缓存
+        bookInfoCacheManager.evictBookInfoCache(chapter.getBookId());
 
+        //把更新的id推送到mq
+        amqpMsgManager.sendBookChangeMsg(chapter.getBookId());
 
-        return null;
+        return Result.success();
     }
 }

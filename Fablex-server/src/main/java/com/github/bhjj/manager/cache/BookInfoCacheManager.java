@@ -10,6 +10,7 @@ import com.github.bhjj.entity.BookInfo;
 import com.github.bhjj.vo.BookInfoVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -69,5 +70,15 @@ public class BookInfoCacheManager {
                 .orderByDesc(DatabaseConsts.BookTable.COLUMN_LAST_CHAPTER_UPDATE_TIME)
                 .last(DatabaseConsts.SqlEnum.LIMIT_500.getSql());
         return bookInfoMapper.selectList(queryWrapper).stream().map(BookInfo::getId).toList();
+    }
+
+    /**
+     * 清楚小说信息缓存
+     * @param bookId
+     */
+    @CacheEvict(cacheManager = CacheConsts.CAFFEINE_CACHE_MANAGER,
+            value = CacheConsts.BOOK_INFO_CACHE_NAME)
+    public void evictBookInfoCache(Long bookId) {
+
     }
 }

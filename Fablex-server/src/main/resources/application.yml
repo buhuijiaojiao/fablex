@@ -78,21 +78,47 @@ spring:
       port: ${fablex.redis.port}
       password: ${fablex.redis.password}
       database: ${fablex.redis.database}
+  #  ES 配置
+  elasticsearch:
+    enabled: ${fablex.elasticsearch.enabled}
+    host: ${fablex.elasticsearch.host}
+    port: ${fablex.elasticsearch.port}
+
+
+  # Spring AMQP 配置
+  amqp:
+      # 是否开启 Spring AMQP：true-开启 false-不开启
+    enabled: ${fablex.amqp.enabled}
+    # RabbitMQ 配置
+
+  rabbitmq:
+    addresses: ${fablex.rabbitmq.addresses}
+    virtual-host: ${fablex.rabbitmq.virtual-host}
+    template:
+      retry:
+        # 开启重试
+        enabled: true
+        # 最大重试次数
+        max-attempts: 3
+        # 第一次和第二次重试之间的持续时间
+        initial-interval: "3s"
+
+
 # XXL-JOB 配置
 xxl:
   job:
     # 是否开启 XXL-JOB：true-开启 false-不开启
-    enabled: true
+    enabled: ${fablex.xxl.job.enabled}
     admin:
       ### 调度中心部署根地址 [选填]：如调度中心集群部署存在多个地址则用逗号分隔。执行器将会使用该地址进行"执行器心跳注册"和"任务结果回调"；为空则关闭自动注册；
-      addresses: http://127.0.0.1:8080/xxl-job-admin
+      addresses: ${fablex.xxl.job.admin.addresses}
     executor:
       ### 执行器AppName [选填]：执行器心跳注册分组依据；为空则关闭自动注册
-      appname: xxl-job-executor-fablex
+      appname: ${fablex.xxl.job.executor.appname}
       ### 执行器运行日志文件存储磁盘路径 [选填] ：需要对该路径拥有读写权限；为空则使用默认路径；
-      logpath: logs/xxl-job/jobhandler
+      logpath: ${fablex.xxl.job.executor.logpath}
     ### xxl-job, access token
-    accessToken: 123456
+    accessToken: ${fablex.xxl.job.accessToken}
 --- #---------------------跨域配置---------------------------
 # 项目配置
 fablex:
@@ -102,9 +128,5 @@ fablex:
     allow-origins:
       - http://localhost:1024
       - http://localhost:8081
---- #---------------------ES配置----------------------------
-spring:
-  elasticsearch:
-    enabled: true
-    host: ${fablex.elasticsearch.host}
-    port: ${fablex.elasticsearch.port}
+
+

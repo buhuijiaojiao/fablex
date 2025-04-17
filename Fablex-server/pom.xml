@@ -65,11 +65,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
         </dependency>
-<!--        &lt;!&ndash; MQ 相关 &ndash;&gt;
+         <!--MQ 相关 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>-->
+        </dependency>
         <!-- XXL-JOB 相关 -->
         <dependency>
             <groupId>com.xuxueli</groupId>

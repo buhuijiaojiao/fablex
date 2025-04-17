@@ -6,6 +6,7 @@ import com.github.bhjj.constant.DatabaseConsts;
 import com.github.bhjj.dao.BookContentMapper;
 import com.github.bhjj.entity.BookContent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -28,5 +29,15 @@ public class BookContentCacheManager {
                 .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
         BookContent bookContent = bookContentMapper.selectOne(queryWrapper);
         return bookContent.getContent();
+    }
+
+    /**
+     * 清除章节内容缓存
+     * @param chapterId
+     */
+    @CacheEvict(cacheManager = CacheConsts.REDIS_CACHE_MANAGER,
+            value = CacheConsts.BOOK_CONTENT_CACHE_NAME)
+    public void evictBookContentCache(Long chapterId) {
+
     }
 }
